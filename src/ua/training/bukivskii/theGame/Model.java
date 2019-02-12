@@ -1,45 +1,35 @@
 package ua.training.bukivskii.theGame;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.ArrayList;
 
 public class Model {
     private int secretNumber;
     private int gameRangeMin;
     private int gameRangeMax;
-    private View view; // I`m definately the one who makes my life harder!
-    private int turnsMade = 0;
-    private int[] turnsHistory;
+    private ArrayList<Integer> turnsHistory = new ArrayList<>();
 
 
-    public Model(View view){
-        secretNumber = ThreadLocalRandom.current().nextInt(Controller.DEFAULT_GAME_RANGE_MIN, Controller.DEFAULT_GAME_RANGE_MAX + 1);
-        gameRangeMin = Controller.DEFAULT_GAME_RANGE_MIN;
-        gameRangeMax = Controller.DEFAULT_GAME_RANGE_MAX;
-        this.view = view;
-        turnsHistory = new int[gameRangeMax-gameRangeMin];
+    public Model(){
+        gameRangeMin = Constants.DEFAULT_GAME_RANGE_MIN;
+        gameRangeMax = Constants.DEFAULT_GAME_RANGE_MAX;
+        secretNumber = generateRandomSecretNumber();
     }
 
-    public Model(View view, int rangeMin, int rangeMax){
-        secretNumber = ThreadLocalRandom.current().nextInt(rangeMin, rangeMax + 1);
+    public Model(int rangeMin, int rangeMax){
         gameRangeMin = rangeMin;
         gameRangeMax = rangeMax;
-        this.view = view;
-        turnsHistory = new int[gameRangeMax-gameRangeMin];
+        secretNumber = generateRandomSecretNumber();
     }
 
-    public Model(View view, int rangeMin, int rangeMax, int magickNumber){  //Seems I am the one who make my own life harder ;)
+    public Model(int rangeMin, int rangeMax, int magickNumber){  //Seems I am the one who make my own life harder ;)
+        gameRangeMin = rangeMin;
+        gameRangeMax = rangeMax;
         secretNumber = magickNumber;
-        gameRangeMin = rangeMin;
-        gameRangeMax = rangeMax;
-        this.view = view;
-        turnsHistory = new int[gameRangeMax-gameRangeMin];
     }
 
     public boolean validateValueForRange(int userVal){
-        if(userVal <= gameRangeMin || userVal >= gameRangeMax) {
-            return false;
-        }
-        return true;
+        return !(userVal <= gameRangeMin || userVal >= gameRangeMax);
     }
 
     private void updateRange(int newRangeMin, int newRangeMax){
@@ -47,32 +37,28 @@ public class Model {
         gameRangeMax = newRangeMax;
     }
 
-    public boolean processUserNumber(int userVal){
-        turnsHistory[turnsMade]=userVal;
-        view.printLastTurn(turnsHistory[turnsMade]);
-        turnsMade++;
+    public int processUserNumber(int userVal){
+        turnsHistory.add(userVal);
         if(userVal<secretNumber){
             updateRange(userVal,gameRangeMax);
-            view.printMessage(View.BIGGER_MESSAGE);
-            return false;
+            return -1;
         }else if(userVal>secretNumber){
             updateRange(gameRangeMin,userVal);
-            view.printMessage(view.SMALLLER_MESSAGE);
-            return false;
+            return 1;
         }
-        return true;
+        return 0;
     }
 
-    public void printCurrentRange(){
-        view.printCurrentRange(gameRangeMin,gameRangeMax);
+    public int getGameRangeMin(){
+        return  this.gameRangeMin;
     }
-
-    public void printWrongRange(){
-        view.printMessage(View.WRONG_RANGE_MESSAGE);
-        view.printCurrentRange(gameRangeMin,gameRangeMax);
+    public int getGameRangeMax(){
+        return  this.gameRangeMax;
     }
-
-    public void gameWon(){
-        view.printGameWon(turnsMade, turnsHistory);
+    public ArrayList getTurnsHistory(){
+        return turnsHistory;
+    }
+    public int generateRandomSecretNumber() {
+        return ThreadLocalRandom.current().nextInt(gameRangeMin+1, gameRangeMax);
     }
 }

@@ -4,13 +4,9 @@ import java.util.Scanner;
 
 public class Controller {
 
-    public static final int DEFAULT_GAME_RANGE_MIN = 0;
-    public static final int DEFAULT_GAME_RANGE_MAX = 100;
-
     private Model model;
     private View view;
-    private boolean gameIsWon = false;
-    private int userValue;
+    private int userValue,gameState;
 
     public Controller(Model model, View view) {
         this.model = model;
@@ -19,41 +15,41 @@ public class Controller {
 
     public void startGame(){
         Scanner scan = new Scanner(System.in);
-        view.printMessage(view.HELP_MESSAGE);
-        while (!gameIsWon){
-            model.printCurrentRange();
-            view.printMessage(view.ASK_FOR_INPUT_MESSAGE);
-            userValue = inputAndVerify(scan);
-            gameIsWon = model.processUserNumber(userValue);
-        }
-        model.gameWon();
-    }
-
-    public int inputAndVerify(Scanner scan) {
-
-        boolean dataIsValidated = false; // TODO do...while
-        int bufferData=0;
-        while(!dataIsValidated) {
-            bufferData = inputInt(scan);
-            dataIsValidated = isCorrectRange(bufferData);
-            if(!dataIsValidated){
-                model.printWrongRange();
-                view.printMessage(View.ASK_FOR_INPUT_MESSAGE);
+        view.printMessage(Strings.HELP_MESSAGE);
+        do{
+            view.askForInput(model.getGameRangeMin(),model.getGameRangeMax());
+            userValue = inputValidatedValue(scan);
+            view.printLastTurn(userValue);
+            gameState = model.processUserNumber(userValue);
+            if(gameState>0){
+                view.printMessage(Strings.SMALLLER_MESSAGE);
+            }
+            if(gameState<0){
+                view.printMessage(Strings.BIGGER_MESSAGE);
             }
         }
-        return bufferData;
+        while (gameState!=0);
+        view.printGameWon(model.getTurnsHistory());
     }
 
-    private int inputInt(Scanner scan){
+    private int inputValidatedValue(Scanner scan) {
+        int bufferData;
+        while(true) { //TODO while true :(
+            bufferData = inputInt(scan);
+            if(model.validateValueForRange(bufferData)){
+                return bufferData;
+            }
+            view.printMessage(Strings.WRONG_RANGE_MESSAGE);
+            view.askForInput(model.getGameRangeMin(),model.getGameRangeMax());
+        }
+    }
+
+    private int inputInt(Scanner scan){ //checks input data for int type
         while (!scan.hasNextInt()) { //TODO fix input like "some words 1"
-            view.printMessage(view.WRONG_TYPE_MESSAGE);
-            view.printMessage(View.ASK_FOR_INPUT_MESSAGE);
+            view.printMessage(Strings.WRONG_TYPE_MESSAGE);
+            view.askForInput(model.getGameRangeMin(),model.getGameRangeMax());
             scan.next();
         }
         return scan.nextInt();
-    }
-
-    private boolean isCorrectRange(int userVal){
-        return model.validateValueForRange(userVal);
     }
 }
