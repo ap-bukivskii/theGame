@@ -9,4 +9,5 @@ public interface Strings {
     String BIGGER_MESSAGE = "The secret number is bigger than your guess!\n";
     String SMALLLER_MESSAGE = "The secret number is smaller than your guess!\n";
     String YOU_WON_MESSAGE = "You are the WINNER!\n";
+    String OPTIONS_ERROR_MESSAGE = "Could not parse command line options.\nStartind the game with default range.\n";
 }
